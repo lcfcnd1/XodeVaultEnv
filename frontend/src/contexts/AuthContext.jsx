@@ -14,17 +14,28 @@ export function AuthProvider({ children }) {
   const [vaultKey, setVaultKey] = useState(null);
   const [vaultSalt, setVaultSalt] = useState(null);
 
+  function getSaltForUser(username) {
+    return Array.from(new TextEncoder().encode(username.padEnd(16, '0').slice(0, 16)))
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join('');
+  }
+
   async function login(token, username, password) {
     localStorage.setItem('xv_token', token);
     localStorage.setItem('xv_username', username);
-    // Derive vault key from master password (salt = username for determinism)
-    const saltHex = Array.from(new TextEncoder().encode(username.padEnd(16, '0').slice(0, 16)))
-      .map((b) => b.toString(16).padStart(2, '0'))
-      .join('');
-    const { key, saltHex: usedSalt } = await deriveKey(password, saltHex);
+    const { key, saltHex: usedSalt } = await deriveKey(password, getSaltForUser(username));
     setVaultKey(key);
     setVaultSalt(usedSalt);
     setUser({ token, username });
+  }
+
+  // Called when user returns with a valid JWT but no in-memory vaultKey (page refresh)
+  async function unlock(password) {
+    const username = user?.username;
+    if (!username) throw new Error('No user session');
+    const { key, saltHex: usedSalt } = await deriveKey(password, getSaltForUser(username));
+    setVaultKey(key);
+    setVaultSalt(usedSalt);
   }
 
   function logout() {
@@ -36,7 +47,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, vaultKey, vaultSalt, login, logout }}>
+    <AuthContext.Provider value={{ user, vaultKey, vaultSalt, login, unlock, logout }}>
       {children}
     </AuthContext.Provider>
   );

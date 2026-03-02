@@ -96,6 +96,10 @@
   "arch_pbkdf2": "Derivación de clave PBKDF2",
   "arch_aesgcm": "Cifrado AES-256-GCM",
   "arch_sharekey": "Generación de clave aleatoria",
+  "unlock_title": "Desbloquea tu Bóveda",
+  "unlock_sub": "Bienvenido de nuevo, {{username}}. Ingresa tu contraseña maestra para descifrar tus secretos.",
+  "unlock_btn": "Desbloquear Bóveda",
+
   "arch_server": "Servidor (SQLite)",
   "arch_no_plain": "Sin texto plano almacenado",
   "arch_no_keys": "Sin claves almacenadas",

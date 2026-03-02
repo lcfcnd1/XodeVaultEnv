@@ -4,13 +4,17 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Navbar from './components/Navbar';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
+import UnlockPage from './pages/UnlockPage';
 import DashboardPage from './pages/DashboardPage';
 import SharedViewPage from './pages/SharedViewPage';
 import './utils/i18n';
 
 function ProtectedRoute({ children }) {
-  const { user } = useAuth();
-  return user ? children : <Navigate to="/login" replace />;
+  const { user, vaultKey } = useAuth();
+  if (!user) return <Navigate to="/login" replace />;
+  // JWT present but vault key lost (page refresh) → ask for master password
+  if (!vaultKey) return <UnlockPage />;
+  return children;
 }
 
 function AppRoutes() {
@@ -22,7 +26,7 @@ function AppRoutes() {
         {/* Public share view */}
         <Route path="/share/:id" element={<SharedViewPage />} />
 
-        {/* Landing page — always public; redirects to dashboard if already logged in */}
+        {/* Landing */}
         <Route
           path="/"
           element={user ? <Navigate to="/dashboard" replace /> : <LandingPage />}
@@ -49,7 +53,6 @@ function AppRoutes() {
           }
         />
 
-        {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>

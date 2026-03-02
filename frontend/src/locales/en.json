@@ -96,6 +96,10 @@
   "arch_pbkdf2": "PBKDF2 key derivation",
   "arch_aesgcm": "AES-256-GCM encryption",
   "arch_sharekey": "Random share key generation",
+  "unlock_title": "Unlock your Vault",
+  "unlock_sub": "Welcome back, {{username}}. Enter your master password to decrypt your secrets.",
+  "unlock_btn": "Unlock Vault",
+
   "arch_server": "Server (SQLite)",
   "arch_no_plain": "No plaintext stored",
   "arch_no_keys": "No keys stored",

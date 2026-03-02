@@ -18,8 +18,10 @@ export default function UnlockPage() {
     setLoading(true);
     try {
       await unlock(password);
-    } catch {
-      setError(t('error_credentials'));
+    } catch (err) {
+      const isWrong = err.message === 'wrong_password' || err.message.includes('Mismatch');
+      setError(isWrong ? t('error_credentials') : t('error_generic'));
+      setPassword('');
     } finally {
       setLoading(false);
     }

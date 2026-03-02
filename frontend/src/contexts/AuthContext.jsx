@@ -1,7 +1,12 @@
 import { createContext, useContext, useState } from 'react';
-import { deriveKey } from '../utils/cryptoUtils';
+import { deriveKey, encrypt, decrypt } from '../utils/cryptoUtils';
 
 const AuthContext = createContext(null);
+
+// A known plaintext we encrypt on login and try to decrypt on unlock.
+// If decryption succeeds the password is correct; if AES-GCM auth fails it's wrong.
+const VERIFY_PLAINTEXT = 'xodevault_verify_v1';
+const VERIFY_KEY = 'xv_verify';
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
@@ -10,7 +15,6 @@ export function AuthProvider({ children }) {
     return token && username ? { token, username } : null;
   });
 
-  // In-memory vault key (never persisted to storage)
   const [vaultKey, setVaultKey] = useState(null);
   const [vaultSalt, setVaultSalt] = useState(null);
 
@@ -23,17 +27,39 @@ export function AuthProvider({ children }) {
   async function login(token, username, password) {
     localStorage.setItem('xv_token', token);
     localStorage.setItem('xv_username', username);
+
     const { key, saltHex: usedSalt } = await deriveKey(password, getSaltForUser(username));
+
+    // Store an encrypted verification blob so unlock() can validate the password
+    const { cipherHex, ivHex } = await encrypt(VERIFY_PLAINTEXT, key);
+    localStorage.setItem(VERIFY_KEY, `${cipherHex}|${ivHex}`);
+
     setVaultKey(key);
     setVaultSalt(usedSalt);
     setUser({ token, username });
   }
 
-  // Called when user returns with a valid JWT but no in-memory vaultKey (page refresh)
+  // Called when the user returns with a valid JWT but vaultKey was lost (page refresh).
+  // Throws if the password is wrong — caller must handle the error.
   async function unlock(password) {
     const username = user?.username;
     if (!username) throw new Error('No user session');
+
     const { key, saltHex: usedSalt } = await deriveKey(password, getSaltForUser(username));
+
+    // Validate against the stored verification blob
+    const stored = localStorage.getItem(VERIFY_KEY);
+    if (stored) {
+      const [cipherHex, ivHex] = stored.split('|');
+      try {
+        const result = await decrypt(cipherHex, ivHex, key);
+        if (result !== VERIFY_PLAINTEXT) throw new Error('Mismatch');
+      } catch {
+        // AES-GCM authentication failed → wrong password
+        throw new Error('wrong_password');
+      }
+    }
+
     setVaultKey(key);
     setVaultSalt(usedSalt);
   }
@@ -41,6 +67,7 @@ export function AuthProvider({ children }) {
   function logout() {
     localStorage.removeItem('xv_token');
     localStorage.removeItem('xv_username');
+    localStorage.removeItem(VERIFY_KEY);
     setUser(null);
     setVaultKey(null);
     setVaultSalt(null);

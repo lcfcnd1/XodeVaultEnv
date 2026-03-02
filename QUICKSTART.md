@@ -16,7 +16,7 @@ This guide covers deploying XodeVault on a fresh Ubuntu/Debian VPS using **PM2**
 ## Step 1 — Clone & Install
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/xodevault.git
+git clone https://github.com/lcfcnd1/XodeVaultEnv.git
 cd xodevault
 
 # Install backend dependencies

@@ -217,7 +217,7 @@ export default function LandingPage() {
             <span>XodeVault — {t('e2ee_badge')}</span>
           </div>
           <a
-            href="https://github.com"
+            href="https://github.com/lcfcnd1/XodeVaultEnv"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"

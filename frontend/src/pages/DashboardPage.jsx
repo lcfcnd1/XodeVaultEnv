@@ -22,7 +22,9 @@ export default function DashboardPage() {
       const decrypted = await Promise.all(
         list.map(async (s) => {
           try {
-            const title = await decrypt(s.title, s.iv, vaultKey);
+            // iv is stored as "titleIV|contentIV" — only titleIV needed here
+            const titleIV = s.iv.split('|')[0];
+            const title = await decrypt(s.title, titleIV, vaultKey);
             return { ...s, title };
           } catch {
             return { ...s, title: '[encrypted]' };

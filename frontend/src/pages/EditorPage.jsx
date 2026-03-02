@@ -22,9 +22,11 @@ export default function EditorPage({ secretId, onBack }) {
     (async () => {
       try {
         const s = await api.getSecret(secretId);
+        // iv is stored as "titleIV|contentIV"
+        const [titleIV, contentIV] = s.iv.split('|');
         const [decTitle, decContent] = await Promise.all([
-          decrypt(s.title, s.iv, vaultKey),
-          decrypt(s.content, s.iv, vaultKey),
+          decrypt(s.title, titleIV, vaultKey),
+          decrypt(s.content, contentIV, vaultKey),
         ]);
         setTitle(decTitle);
         setContent(decContent);
@@ -41,13 +43,15 @@ export default function EditorPage({ secretId, onBack }) {
     setSaving(true);
     setError('');
     try {
-      const { cipherHex: encTitle, ivHex } = await encrypt(title, vaultKey);
-      const { cipherHex: encContent } = await encrypt(content, vaultKey);
+      const { cipherHex: encTitle, ivHex: titleIV } = await encrypt(title, vaultKey);
+      const { cipherHex: encContent, ivHex: contentIV } = await encrypt(content, vaultKey);
+      // Store both IVs together so each field can be decrypted independently
+      const iv = `${titleIV}|${contentIV}`;
 
       if (secretId) {
-        await api.updateSecret(secretId, { title: encTitle, content: encContent, iv: ivHex });
+        await api.updateSecret(secretId, { title: encTitle, content: encContent, iv });
       } else {
-        await api.createSecret({ title: encTitle, content: encContent, iv: ivHex });
+        await api.createSecret({ title: encTitle, content: encContent, iv });
         onBack();
         return;
       }

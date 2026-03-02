@@ -7,6 +7,8 @@ const authRoutes = require('./routes/auth');
 const secretsRoutes = require('./routes/secrets');
 const shareRoutes = require('./routes/share');
 const cliRoutes = require('./routes/cli');
+const apiKeysRoutes = require('./routes/apikeys');
+const ingestRoutes = require('./routes/ingest');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -27,6 +29,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/secrets', secretsRoutes);
 app.use('/api/share', shareRoutes);
 app.use('/api/cli', cliRoutes);
+app.use('/api/keys', apiKeysRoutes);
+app.use('/api/ingest', ingestRoutes);
 
 // Serve static frontend in production
 const frontendDist = path.join(__dirname, '..', '..', 'frontend', 'dist');

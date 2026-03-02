@@ -79,4 +79,21 @@ export const api = {
       method: 'DELETE',
       headers: authHeaders(),
     }).then(handleResponse),
+
+  // API Keys
+  listApiKeys: () =>
+    fetch(`${BASE}/keys`, { headers: authHeaders() }).then(handleResponse),
+
+  createApiKey: (label) =>
+    fetch(`${BASE}/keys`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ label }),
+    }).then(handleResponse),
+
+  deleteApiKey: (id) =>
+    fetch(`${BASE}/keys/${id}`, {
+      method: 'DELETE',
+      headers: authHeaders(),
+    }).then(handleResponse),
 };

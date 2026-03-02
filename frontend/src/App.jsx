@@ -7,6 +7,8 @@ import LoginPage from './pages/LoginPage';
 import UnlockPage from './pages/UnlockPage';
 import DashboardPage from './pages/DashboardPage';
 import SharedViewPage from './pages/SharedViewPage';
+import ApiKeysPage from './pages/ApiKeysPage';
+import DocsPage from './pages/DocsPage';
 import './utils/i18n';
 
 function ProtectedRoute({ children }) {
@@ -38,20 +40,25 @@ function AppRoutes() {
           element={user ? <Navigate to="/dashboard" replace /> : <LoginPage />}
         />
 
-        {/* Protected app */}
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <>
-                <Navbar />
-                <main>
-                  <DashboardPage />
-                </main>
-              </>
-            </ProtectedRoute>
-          }
-        />
+        {/* Protected app — shared layout with Navbar */}
+        {[
+          { path: '/dashboard', element: <DashboardPage /> },
+          { path: '/keys',      element: <ApiKeysPage /> },
+          { path: '/docs',      element: <DocsPage /> },
+        ].map(({ path, element }) => (
+          <Route
+            key={path}
+            path={path}
+            element={
+              <ProtectedRoute>
+                <>
+                  <Navbar />
+                  <main>{element}</main>
+                </>
+              </ProtectedRoute>
+            }
+          />
+        ))}
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

@@ -5,7 +5,10 @@ const router = express.Router();
 // Usage: curl -s https://domain/api/cli/SHARE_ID | node - SHARE_KEY > .env
 router.get('/:id', (req, res) => {
   const shareId = req.params.id;
-  const baseUrl = `${req.protocol}://${req.get('host')}`;
+  // Behind a reverse proxy (Nginx), req.protocol is always 'http'.
+  // X-Forwarded-Proto contains the original scheme used by the client.
+  const proto = req.get('x-forwarded-proto') || req.protocol;
+  const baseUrl = `${proto}://${req.get('host')}`;
 
   const script = `#!/usr/bin/env node
 // XodeVault CLI Decryptor - Zero-Knowledge E2EE

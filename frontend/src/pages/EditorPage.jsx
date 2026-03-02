@@ -6,6 +6,34 @@ import { api } from '../utils/api';
 import { encrypt, decrypt } from '../utils/cryptoUtils';
 import ShareModal from '../components/ShareModal';
 
+const MAX_BYTES = 3 * 1024 * 1024; // 3 MB
+
+function SizeIndicator({ bytes, maxBytes }) {
+  const pct = Math.min((bytes / maxBytes) * 100, 100);
+  const kb = (bytes / 1024).toFixed(1);
+  const maxKb = (maxBytes / 1024 / 1024).toFixed(0);
+  const isWarn = pct > 75;
+  const isOver = pct >= 100;
+
+  return (
+    <div className="absolute bottom-2 right-3 flex items-center gap-2">
+      <div className="w-20 h-1.5 rounded-full bg-gray-700 overflow-hidden">
+        <div
+          className={`h-full rounded-full transition-all ${
+            isOver ? 'bg-red-500' : isWarn ? 'bg-amber-400' : 'bg-green-500'
+          }`}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+      <span className={`text-xs font-mono ${
+        isOver ? 'text-red-400' : isWarn ? 'text-amber-400' : 'text-gray-500'
+      }`}>
+        {kb} KB / {maxKb} MB
+      </span>
+    </div>
+  );
+}
+
 export default function EditorPage({ secretId, onBack }) {
   const { t } = useTranslation();
   const { vaultKey } = useAuth();
@@ -40,6 +68,13 @@ export default function EditorPage({ secretId, onBack }) {
 
   async function handleSave() {
     if (!title.trim() || !content.trim()) return;
+
+    const contentBytes = new TextEncoder().encode(content).length;
+    if (contentBytes > MAX_BYTES) {
+      setError(t('error_size_limit'));
+      return;
+    }
+
     setSaving(true);
     setError('');
     try {
@@ -145,16 +180,19 @@ export default function EditorPage({ secretId, onBack }) {
         </div>
       )}
 
-      {/* Content */}
-      <textarea
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-        placeholder={t('editor_placeholder')}
-        className="w-full h-[calc(100vh-300px)] min-h-[300px] p-4 rounded-xl bg-gray-900 dark:bg-black border border-gray-200 dark:border-gray-800 text-green-400 font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-brand-500 transition"
-        spellCheck={false}
-        autoCorrect="off"
-        autoCapitalize="off"
-      />
+      {/* Content + size indicator */}
+      <div className="relative">
+        <textarea
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          placeholder={t('editor_placeholder')}
+          className="w-full h-[calc(100vh-320px)] min-h-[280px] p-4 pb-8 rounded-xl bg-gray-900 dark:bg-black border border-gray-200 dark:border-gray-800 text-green-400 font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-brand-500 transition"
+          spellCheck={false}
+          autoCorrect="off"
+          autoCapitalize="off"
+        />
+        <SizeIndicator bytes={new TextEncoder().encode(content).length} maxBytes={MAX_BYTES} />
+      </div>
 
       {showShare && shareSecret && (
         <ShareModal secret={shareSecret} onClose={() => setShowShare(false)} />

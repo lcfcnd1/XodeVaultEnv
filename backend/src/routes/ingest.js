@@ -2,9 +2,10 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 const { apiKeyMiddleware } = require('../middleware/apiKey');
+const { checkContentSize } = require('../middleware/sizeLimit');
 
 // POST /api/ingest — push a new encrypted secret
-router.post('/', apiKeyMiddleware, (req, res) => {
+router.post('/', apiKeyMiddleware, checkContentSize, (req, res) => {
   const { title, content, iv } = req.body;
   if (!title || !content || !iv) {
     return res.status(400).json({

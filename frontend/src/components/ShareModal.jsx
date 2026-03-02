@@ -169,10 +169,19 @@ export default function ShareModal({ secret, onClose }) {
 
   useEffect(() => { loadShares(); }, [loadShares]);
 
+  const MAX_BYTES = 3 * 1024 * 1024;
+
   async function handleGenerate() {
     setGenerating(true);
     setFormError('');
     try {
+      const contentBytes = new TextEncoder().encode(secret.plaintext).length;
+      if (contentBytes > MAX_BYTES) {
+        setFormError(t('error_size_limit'));
+        setGenerating(false);
+        return;
+      }
+
       const { key, keyHex } = await generateShareKey();
       const { cipherHex, ivHex } = await encrypt(secret.plaintext, key);
 

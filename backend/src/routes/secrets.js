@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 const { authMiddleware } = require('../middleware/auth');
+const { checkContentSize } = require('../middleware/sizeLimit');
 
 router.use(authMiddleware);
 
@@ -20,7 +21,7 @@ router.get('/:id', (req, res) => {
   res.json(secret);
 });
 
-router.post('/', (req, res) => {
+router.post('/', checkContentSize, (req, res) => {
   const { title, content, iv } = req.body;
   if (!title || !content || !iv) {
     return res.status(400).json({ error: 'title, content, and iv are required' });
@@ -31,7 +32,7 @@ router.post('/', (req, res) => {
   res.status(201).json({ id: result.lastInsertRowid });
 });
 
-router.put('/:id', (req, res) => {
+router.put('/:id', checkContentSize, (req, res) => {
   const { title, content, iv } = req.body;
   const secret = db.prepare(
     'SELECT id FROM secrets WHERE id = ? AND user_id = ?'

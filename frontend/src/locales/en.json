@@ -66,6 +66,7 @@
   "e2ee_badge": "End-to-End Encrypted",
   "delete_confirm": "Are you sure you want to delete this secret? This action cannot be undone.",
   "error_generic": "Something went wrong. Please try again.",
+  "error_size_limit": "Content exceeds the 3 MB limit. Please reduce the size before saving.",
   "error_credentials": "Invalid username or password.",
   "error_username_taken": "Username already taken.",
   "error_weak_password": "Password must be at least 8 characters.",

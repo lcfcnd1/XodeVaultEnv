@@ -66,6 +66,7 @@
   "e2ee_badge": "Cifrado de Extremo a Extremo",
   "delete_confirm": "¿Estás seguro de que quieres eliminar este secreto? Esta acción no se puede deshacer.",
   "error_generic": "Algo salió mal. Por favor intenta de nuevo.",
+  "error_size_limit": "El contenido supera el límite de 3 MB. Reduce el tamaño antes de guardar.",
   "error_credentials": "Usuario o contraseña incorrectos.",
   "error_username_taken": "El nombre de usuario ya está en uso.",
   "error_weak_password": "La contraseña debe tener al menos 8 caracteres.",

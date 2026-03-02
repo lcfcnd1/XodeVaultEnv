@@ -61,6 +61,9 @@ export const api = {
     }).then(handleResponse),
 
   // Share
+  listShares: () =>
+    fetch(`${BASE}/share`, { headers: authHeaders() }).then(handleResponse),
+
   createShare: (payload) =>
     fetch(`${BASE}/share`, {
       method: 'POST',
@@ -70,4 +73,10 @@ export const api = {
 
   getShare: (id) =>
     fetch(`${BASE}/share/${id}`).then(handleResponse),
+
+  deleteShare: (id) =>
+    fetch(`${BASE}/share/${id}`, {
+      method: 'DELETE',
+      headers: authHeaders(),
+    }).then(handleResponse),
 };

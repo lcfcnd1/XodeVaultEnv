@@ -31,6 +31,8 @@ db.exec(`
 
   CREATE TABLE IF NOT EXISTS shared_secrets (
     id TEXT PRIMARY KEY,
+    user_id INTEGER,
+    label TEXT,
     content TEXT NOT NULL,
     iv TEXT NOT NULL,
     expires_at INTEGER,
@@ -38,5 +40,10 @@ db.exec(`
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 `);
+
+// Migrate: add user_id and label columns if they don't exist yet
+const cols = db.pragma('table_info(shared_secrets)').map((c) => c.name);
+if (!cols.includes('user_id')) db.exec('ALTER TABLE shared_secrets ADD COLUMN user_id INTEGER');
+if (!cols.includes('label'))   db.exec('ALTER TABLE shared_secrets ADD COLUMN label TEXT');
 
 module.exports = db;

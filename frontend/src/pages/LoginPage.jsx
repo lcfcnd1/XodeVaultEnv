@@ -31,7 +31,7 @@ export default function LoginPage() {
         mode === 'login'
           ? await api.login(username, password)
           : await api.register(username, password);
-      await login(data.token, data.username, password);
+      await login(data.token, data.username, password, data.isAdmin ?? false);
     } catch (err) {
       setError(err.message || t('error_generic'));
     } finally {

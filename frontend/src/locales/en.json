@@ -167,5 +167,19 @@
   "arch_server": "Server (SQLite)",
   "arch_no_plain": "No plaintext stored",
   "arch_no_keys": "No keys stored",
-  "arch_no_pass": "No passwords stored"
+  "arch_no_pass": "No passwords stored",
+
+  "admin_nav": "Admin Panel",
+  "admin_dashboard": "Administration Panel",
+  "admin_subtitle": "Manage users and server resources",
+  "admin_refresh": "Refresh",
+  "admin_total_users": "Users",
+  "admin_total_secrets": "Total secrets",
+  "admin_total_disk": "Disk usage",
+  "admin_no_users": "No registered users",
+  "admin_joined": "Joined:",
+  "admin_secrets": "Secrets",
+  "admin_api_keys": "API Keys",
+  "admin_disk": "On disk",
+  "admin_delete_confirm": "Delete user {{username}} and ALL their data? This action is irreversible."
 }

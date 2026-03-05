@@ -27,7 +27,8 @@ router.post('/register', async (req, res) => {
     const stmt = db.prepare('INSERT INTO users (username, auth_hash, salt) VALUES (?, ?, ?)');
     const result = stmt.run(username, auth_hash, salt);
     const token = jwt.sign({ id: result.lastInsertRowid, username }, JWT_SECRET, { expiresIn: '7d' });
-    res.status(201).json({ token, username });
+    const isAdmin = process.env.ADMIN_EMAIL ? username === process.env.ADMIN_EMAIL : false;
+    res.status(201).json({ token, username, isAdmin });
   } catch (err) {
     res.status(500).json({ error: 'Registration failed' });
   }
@@ -50,7 +51,8 @@ router.post('/login', async (req, res) => {
   }
 
   const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
-  res.json({ token, username: user.username });
+  const isAdmin = process.env.ADMIN_EMAIL ? user.username === process.env.ADMIN_EMAIL : false;
+  res.json({ token, username: user.username, isAdmin });
 });
 
 module.exports = router;

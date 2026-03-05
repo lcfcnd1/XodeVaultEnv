@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Shield, LogOut, Key, BookOpen } from 'lucide-react';
+import { Shield, LogOut, Key, BookOpen, ShieldAlert } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import GlobalControls from './GlobalControls';
@@ -17,7 +17,7 @@ export default function Navbar() {
       <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
         {/* Brand + nav links */}
         <div className="flex items-center gap-1">
-          <NavLink to="/dashboard" className="flex items-center gap-2 mr-3">
+          <NavLink to={user?.isAdmin ? '/admin' : '/dashboard'} className="flex items-center gap-2 mr-3">
             <div className="w-7 h-7 rounded-lg bg-brand-600 flex items-center justify-center">
               <Shield className="w-4 h-4 text-white" />
             </div>
@@ -26,21 +26,33 @@ export default function Navbar() {
             </span>
           </NavLink>
 
-          <NavLink
-            to="/keys"
-            className={({ isActive }) => `${navLink} ${isActive ? activeClass : inactiveClass}`}
-          >
-            <Key className="w-4 h-4" />
-            <span className="hidden sm:inline">{t('nav_apikeys')}</span>
-          </NavLink>
+          {user?.isAdmin ? (
+            <NavLink
+              to="/admin"
+              className={({ isActive }) => `${navLink} ${isActive ? activeClass : inactiveClass}`}
+            >
+              <ShieldAlert className="w-4 h-4" />
+              <span className="hidden sm:inline">{t('admin_nav')}</span>
+            </NavLink>
+          ) : (
+            <>
+              <NavLink
+                to="/keys"
+                className={({ isActive }) => `${navLink} ${isActive ? activeClass : inactiveClass}`}
+              >
+                <Key className="w-4 h-4" />
+                <span className="hidden sm:inline">{t('nav_apikeys')}</span>
+              </NavLink>
 
-          <NavLink
-            to="/docs"
-            className={({ isActive }) => `${navLink} ${isActive ? activeClass : inactiveClass}`}
-          >
-            <BookOpen className="w-4 h-4" />
-            <span className="hidden sm:inline">{t('nav_docs')}</span>
-          </NavLink>
+              <NavLink
+                to="/docs"
+                className={({ isActive }) => `${navLink} ${isActive ? activeClass : inactiveClass}`}
+              >
+                <BookOpen className="w-4 h-4" />
+                <span className="hidden sm:inline">{t('nav_docs')}</span>
+              </NavLink>
+            </>
+          )}
         </div>
 
         {/* Controls */}

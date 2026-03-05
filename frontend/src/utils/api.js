@@ -96,4 +96,14 @@ export const api = {
       method: 'DELETE',
       headers: authHeaders(),
     }).then(handleResponse),
+
+  // Admin
+  adminGetUsers: () =>
+    fetch(`${BASE}/admin/users`, { headers: authHeaders() }).then(handleResponse),
+
+  adminDeleteUser: (id) =>
+    fetch(`${BASE}/admin/users/${id}`, {
+      method: 'DELETE',
+      headers: authHeaders(),
+    }).then(handleResponse),
 };

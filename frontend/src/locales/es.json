@@ -167,5 +167,19 @@
   "arch_server": "Servidor (SQLite)",
   "arch_no_plain": "Sin texto plano almacenado",
   "arch_no_keys": "Sin claves almacenadas",
-  "arch_no_pass": "Sin contraseñas almacenadas"
+  "arch_no_pass": "Sin contraseñas almacenadas",
+
+  "admin_nav": "Panel Admin",
+  "admin_dashboard": "Panel de Administración",
+  "admin_subtitle": "Gestión de usuarios y recursos del servidor",
+  "admin_refresh": "Actualizar",
+  "admin_total_users": "Usuarios",
+  "admin_total_secrets": "Secretos totales",
+  "admin_total_disk": "Espacio en disco",
+  "admin_no_users": "No hay usuarios registrados",
+  "admin_joined": "Registro:",
+  "admin_secrets": "Secretos",
+  "admin_api_keys": "API Keys",
+  "admin_disk": "En disco",
+  "admin_delete_confirm": "¿Eliminar al usuario {{username}} y TODA su información? Esta acción es irreversible."
 }

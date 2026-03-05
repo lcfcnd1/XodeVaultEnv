@@ -6,14 +6,16 @@ import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import UnlockPage from './pages/UnlockPage';
 import DashboardPage from './pages/DashboardPage';
+import AdminDashboardPage from './pages/AdminDashboardPage';
 import SharedViewPage from './pages/SharedViewPage';
 import ApiKeysPage from './pages/ApiKeysPage';
 import DocsPage from './pages/DocsPage';
 import './utils/i18n';
 
-function ProtectedRoute({ children }) {
+function ProtectedRoute({ children, adminOnly = false }) {
   const { user, vaultKey } = useAuth();
   if (!user) return <Navigate to="/login" replace />;
+  if (adminOnly && !user.isAdmin) return <Navigate to="/dashboard" replace />;
   // JWT present but vault key lost (page refresh) → ask for master password
   if (!vaultKey) return <UnlockPage />;
   return children;
@@ -21,6 +23,7 @@ function ProtectedRoute({ children }) {
 
 function AppRoutes() {
   const { user } = useAuth();
+  const defaultHome = user?.isAdmin ? '/admin' : '/dashboard';
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white transition-colors duration-200">
@@ -31,13 +34,26 @@ function AppRoutes() {
         {/* Landing */}
         <Route
           path="/"
-          element={user ? <Navigate to="/dashboard" replace /> : <LandingPage />}
+          element={user ? <Navigate to={defaultHome} replace /> : <LandingPage />}
         />
 
         {/* Auth */}
         <Route
           path="/login"
-          element={user ? <Navigate to="/dashboard" replace /> : <LoginPage />}
+          element={user ? <Navigate to={defaultHome} replace /> : <LoginPage />}
+        />
+
+        {/* Admin panel */}
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute adminOnly>
+              <>
+                <Navbar />
+                <main><AdminDashboardPage /></main>
+              </>
+            </ProtectedRoute>
+          }
         />
 
         {/* Protected app — shared layout with Navbar */}

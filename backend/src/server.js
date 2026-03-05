@@ -9,6 +9,7 @@ const shareRoutes = require('./routes/share');
 const cliRoutes = require('./routes/cli');
 const apiKeysRoutes = require('./routes/apikeys');
 const ingestRoutes = require('./routes/ingest');
+const adminRoutes = require('./routes/admin');
 const { authLimiter, writeLimiter, readLimiter, ingestLimiter } = require('./middleware/rateLimit');
 
 const app = express();
@@ -34,6 +35,7 @@ app.use('/api/share',   writeLimiter,  shareRoutes);
 app.use('/api/cli',     readLimiter,   cliRoutes);
 app.use('/api/keys',    writeLimiter,  apiKeysRoutes);
 app.use('/api/ingest',  ingestLimiter, ingestRoutes);
+app.use('/api/admin',  adminRoutes);
 
 // Serve static frontend in production
 const frontendDist = path.join(__dirname, '..', '..', 'frontend', 'dist');

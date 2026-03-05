@@ -12,7 +12,8 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
     const token = localStorage.getItem('xv_token');
     const username = localStorage.getItem('xv_username');
-    return token && username ? { token, username } : null;
+    const isAdmin = localStorage.getItem('xv_isadmin') === 'true';
+    return token && username ? { token, username, isAdmin } : null;
   });
 
   const [vaultKey, setVaultKey] = useState(null);
@@ -24,9 +25,10 @@ export function AuthProvider({ children }) {
       .join('');
   }
 
-  async function login(token, username, password) {
+  async function login(token, username, password, isAdmin = false) {
     localStorage.setItem('xv_token', token);
     localStorage.setItem('xv_username', username);
+    localStorage.setItem('xv_isadmin', String(isAdmin));
 
     const { key, saltHex: usedSalt } = await deriveKey(password, getSaltForUser(username));
 
@@ -36,7 +38,7 @@ export function AuthProvider({ children }) {
 
     setVaultKey(key);
     setVaultSalt(usedSalt);
-    setUser({ token, username });
+    setUser({ token, username, isAdmin });
   }
 
   // Called when the user returns with a valid JWT but vaultKey was lost (page refresh).
@@ -67,6 +69,7 @@ export function AuthProvider({ children }) {
   function logout() {
     localStorage.removeItem('xv_token');
     localStorage.removeItem('xv_username');
+    localStorage.removeItem('xv_isadmin');
     localStorage.removeItem(VERIFY_KEY);
     setUser(null);
     setVaultKey(null);

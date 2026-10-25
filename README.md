@@ -14,7 +14,7 @@ XodeVault is a lightweight, open-source web application for developers to store 
 
 - **True End-to-End Encryption** — AES-256-GCM with keys derived via PBKDF2 (310,000 iterations). The server only ever stores ciphertext.
 - **Secure Human Sharing** — Share a `.env` via a URL. The decryption key lives in the URL hash (`#key=...`) and is never sent to the server.
-- **Machine / CI-CD Sharing** — Zero-install CLI one-liner: `curl -s https://your-domain/api/cli/SHARE_ID | node - SHARE_KEY > .env`
+- **Machine / CI-CD Sharing** — Zero-install CLI one-liners for Node.js and Python: `curl -s https://your-domain/api/cli/SHARE_ID | node - SHARE_KEY > .env` or `curl -s https://your-domain/api/cli/SHARE_ID/py | python3 - SHARE_KEY > .env`
 - **Dark / Light Mode** — Persistent theme toggle.
 - **English / Spanish (EN/ES)** — Full i18n support via `react-i18next`.
 - **Expiring Shares** — Set shares to expire in 1h, 24h, 7d, 30d, or never.
@@ -65,8 +65,10 @@ XodeVault is a lightweight, open-source web application for developers to store 
 **Machine (CLI):**
 ```bash
 curl -s https://your-domain/api/cli/SHARE_ID | node - SHARE_KEY > .env
+curl -s https://your-domain/api/cli/SHARE_ID/py | python3 - SHARE_KEY > .env
 ```
 - `/api/cli/:id` returns a self-contained Node.js script as plain text.
+- `/api/cli/:id/py` returns a self-contained Python 3.9+ script as plain text with a pure-Python AES-256-GCM implementation.
 - The script runs entirely on your machine, fetches the encrypted blob from `/api/share/:id`, and decrypts it using the `SHARE_KEY` argument.
 - **No data is sent back to any server.** Decryption is local-only.
 
@@ -155,6 +157,7 @@ XodeVault/
 | POST | `/api/share` | JWT | Create a shared secret |
 | GET | `/api/share/:id` | — | Get encrypted share payload |
 | GET | `/api/cli/:id` | — | Get self-contained Node.js decryptor script |
+| GET | `/api/cli/:id/py` | — | Get self-contained Python 3 decryptor script |
 
 ---
 

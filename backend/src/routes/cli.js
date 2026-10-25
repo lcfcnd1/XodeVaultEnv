@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { buildPythonDecryptor } = require('../pythonDecryptor');
 
 // Returns a self-contained Node.js script that fetches and decrypts the secret
 // Usage: curl -s https://domain/api/cli/SHARE_ID | node - SHARE_KEY > .env
@@ -97,6 +98,16 @@ async function decryptAESGCM(encryptedHex, ivHex, keyHex) {
 
   res.setHeader('Content-Type', 'text/plain; charset=utf-8');
   res.send(script);
+});
+
+// Usage: curl -s https://domain/api/cli/SHARE_ID/py | python3 - SHARE_KEY > .env
+router.get('/:id/py', (req, res) => {
+  const shareId = req.params.id;
+  const proto = req.get('x-forwarded-proto') || req.protocol;
+  const baseUrl = `${proto}://${req.get('host')}`;
+
+  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+  res.send(buildPythonDecryptor(shareId, baseUrl));
 });
 
 module.exports = router;

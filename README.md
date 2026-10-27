@@ -95,6 +95,7 @@ curl -s https://your-domain/api/cli/SHARE_ID/py | python3 - SHARE_KEY > .env
 | Database | SQLite via better-sqlite3 |
 | Auth | JWT + bcrypt |
 | Crypto (client) | Web Crypto API (native browser) |
+| Crypto (Python CLI) | Pure-Python AES-256-GCM, standard library only |
 
 ---
 
@@ -106,39 +107,46 @@ XodeVault/
 │   ├── src/
 │   │   ├── server.js          # Express app entry point
 │   │   ├── db.js              # SQLite schema & connection
+│   │   ├── config.js          # BASE_URL configuration
+│   │   ├── pythonDecryptor.js # Zero-dependency Python CLI generator
 │   │   ├── middleware/
 │   │   │   └── auth.js        # JWT middleware
 │   │   └── routes/
 │   │       ├── auth.js        # POST /api/auth/register|login
 │   │       ├── secrets.js     # CRUD /api/secrets (JWT protected)
 │   │       ├── share.js       # POST/GET /api/share
-│   │       └── cli.js         # GET /api/cli/:id (script generator)
+│   │       └── cli.js         # Node.js and Python CLI script endpoints
 │   ├── data/                  # SQLite database file (auto-created)
 │   └── package.json
 │
-└── frontend/
-    ├── src/
-    │   ├── contexts/
-    │   │   ├── ThemeContext.jsx
-    │   │   └── AuthContext.jsx
-    │   ├── utils/
-    │   │   ├── cryptoUtils.js  # PBKDF2, AES-GCM, ShareKey
-    │   │   ├── api.js          # REST client
-    │   │   └── i18n.js         # i18next setup
-    │   ├── locales/
-    │   │   ├── en.json
-    │   │   └── es.json
-    │   ├── components/
-    │   │   ├── Navbar.jsx
-    │   │   └── ShareModal.jsx
-    │   ├── pages/
-    │   │   ├── LoginPage.jsx
-    │   │   ├── DashboardPage.jsx
-    │   │   ├── EditorPage.jsx
-    │   │   └── SharedViewPage.jsx
-    │   ├── App.jsx
-    │   └── main.jsx
-    └── package.json
+├── frontend/
+│   ├── src/
+│   │   ├── contexts/
+│   │   │   ├── ThemeContext.jsx
+│   │   │   └── AuthContext.jsx
+│   │   ├── utils/
+│   │   │   ├── cryptoUtils.js  # PBKDF2, AES-GCM, ShareKey
+│   │   │   ├── api.js          # REST client
+│   │   │   └── i18n.js         # i18next setup
+│   │   ├── locales/
+│   │   │   ├── en.json
+│   │   │   └── es.json
+│   │   ├── components/
+│   │   │   ├── Navbar.jsx
+│   │   │   └── ShareModal.jsx
+│   │   ├── pages/
+│   │   │   ├── LoginPage.jsx
+│   │   │   ├── DashboardPage.jsx
+│   │   │   ├── EditorPage.jsx
+│   │   │   └── SharedViewPage.jsx
+│   │   ├── App.jsx
+│   │   └── main.jsx
+│   └── package.json
+│
+├── tests/
+│   └── test_cli_python.py      # AES-GCM oracle and API round-trip tests
+│
+└── requirements-dev.txt       # pytest + cryptography (test-only)
 ```
 
 ---
@@ -166,6 +174,26 @@ XodeVault/
 See [QUICKSTART.md](QUICKSTART.md) for a step-by-step VPS deployment guide using PM2.
 
 Set `BASE_URL` to the public origin used in generated CLI URLs; when unset, it defaults to `http://localhost:3000`.
+
+Example production configuration:
+
+```env
+PORT=3001
+BASE_URL=https://your-domain.com
+JWT_SECRET=CHANGE_THIS_TO_A_LONG_RANDOM_SECRET
+FRONTEND_URL=https://your-domain.com
+```
+
+### Development tests
+
+Install the test-only Python dependencies and run the complete suite:
+
+```bash
+python3 -m pip install -r requirements-dev.txt
+pytest -q
+```
+
+The suite compares the pure-Python AES-256-GCM implementation byte-for-byte with `cryptography`, covering empty and multi-block plaintexts, 12-byte and non-12-byte nonces, AAD padding, CRLF/Unicode `.env` content, authentication failures, and a real `/api/share` round trip. `cryptography` is not required by the runtime CLI.
 
 ---
 

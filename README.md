@@ -5,6 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-6366f1.svg)](LICENSE)
 [![E2EE](https://img.shields.io/badge/Security-E2EE-22c55e.svg)](#cryptographic-architecture)
 [![Self-Hosted](https://img.shields.io/badge/Deployment-Self--Hosted-f59e0b.svg)](#self-hosting)
+[![Tests](https://github.com/lcfcnd1/XodeVaultEnv/actions/workflows/tests.yml/badge.svg)](https://github.com/lcfcnd1/XodeVaultEnv/actions/workflows/tests.yml)
 
 XodeVault is a lightweight, open-source web application for developers to store and securely share environment variables (`.env` files) and code snippets — with **zero server-side knowledge** of your data.
 

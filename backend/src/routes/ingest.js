@@ -3,6 +3,7 @@ const router = express.Router();
 const db = require('../db');
 const { apiKeyMiddleware } = require('../middleware/apiKey');
 const { checkContentSize } = require('../middleware/sizeLimit');
+const { BASE_URL } = require('../config');
 
 // POST /api/ingest — push a new encrypted secret
 router.post('/', apiKeyMiddleware, checkContentSize, (req, res) => {
@@ -48,8 +49,6 @@ router.get('/:id/data', apiKeyMiddleware, (req, res) => {
 router.get('/:id/download', apiKeyMiddleware, (req, res) => {
   const secretId = req.params.id;
   const lang = (req.query.lang || 'node').toLowerCase();
-  const baseUrl = `${req.get('x-forwarded-proto') || req.protocol}://${req.get('host')}`;
-
   // Verify secret belongs to user
   const row = db.prepare(
     'SELECT id FROM secrets WHERE id = ? AND user_id = ?'
@@ -59,13 +58,13 @@ router.get('/:id/download', apiKeyMiddleware, (req, res) => {
   const apiKey = req.headers['x-api-key'];
 
   if (lang === 'python') {
-    const script = buildPythonScript(baseUrl, secretId, apiKey);
+    const script = buildPythonScript(BASE_URL, secretId, apiKey);
     res.setHeader('Content-Type', 'text/x-python; charset=utf-8');
     res.setHeader('Content-Disposition', `attachment; filename="xodevault_${secretId.slice(0,8)}.py"`);
     return res.send(script);
   }
 
-  const script = buildNodeScript(baseUrl, secretId, apiKey);
+  const script = buildNodeScript(BASE_URL, secretId, apiKey);
   res.setHeader('Content-Type', 'text/plain; charset=utf-8');
   res.setHeader('Content-Disposition', `attachment; filename="xodevault_${secretId.slice(0,8)}.js"`);
   res.send(script);

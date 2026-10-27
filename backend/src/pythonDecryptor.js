@@ -103,29 +103,50 @@ def _ghash(hash_subkey, data):
 def _inc32(counter):
     return counter[:12] + ((int.from_bytes(counter[12:], 'big') + 1) & 0xffffffff).to_bytes(4, 'big')
 
-def decrypt_aes_gcm(key, iv, encrypted):
+def _derive_j0(hash_subkey, iv):
+    if len(iv) == 12:
+        return iv + b'\\x00\\x00\\x00\\x01'
+    padded_iv = iv + b'\\x00' * ((16 - len(iv) % 16) % 16)
+    iv_data = padded_iv + (0).to_bytes(8, 'big') + (len(iv) * 8).to_bytes(8, 'big')
+    return _ghash(hash_subkey, iv_data).to_bytes(16, 'big')
+
+def _crypt_ctr(expanded_key, j0, data):
+    output = bytearray()
+    counter = j0
+    for offset in range(0, len(data), 16):
+        counter = _inc32(counter)
+        keystream = _encrypt_block(expanded_key, counter)
+        output.extend(a ^ b for a, b in zip(data[offset:offset + 16], keystream))
+    return bytes(output)
+
+def _authentication_tag(expanded_key, hash_subkey, j0, ciphertext, aad):
+    padded_aad = aad + b'\\x00' * ((16 - len(aad) % 16) % 16)
+    padded_ciphertext = ciphertext + b'\\x00' * ((16 - len(ciphertext) % 16) % 16)
+    auth_data = padded_aad + padded_ciphertext + (len(aad) * 8).to_bytes(8, 'big') + (len(ciphertext) * 8).to_bytes(8, 'big')
+    return (int.from_bytes(_encrypt_block(expanded_key, j0), 'big') ^ _ghash(hash_subkey, auth_data)).to_bytes(16, 'big')
+
+def encrypt_aes_gcm(key, iv, plaintext, aad=b''):
     if len(key) != 32:
         raise ValueError('ShareKey must be exactly 32 bytes (64 hex characters).')
-    if len(iv) != 12:
-        raise ValueError('The server returned an invalid IV; expected 12 bytes.')
+    expanded_key = _expand_key(key)
+    hash_subkey = int.from_bytes(_encrypt_block(expanded_key, bytes(16)), 'big')
+    j0 = _derive_j0(hash_subkey, iv)
+    ciphertext = _crypt_ctr(expanded_key, j0, plaintext)
+    return ciphertext + _authentication_tag(expanded_key, hash_subkey, j0, ciphertext, aad)
+
+def decrypt_aes_gcm(key, iv, encrypted, aad=b''):
+    if len(key) != 32:
+        raise ValueError('ShareKey must be exactly 32 bytes (64 hex characters).')
     if len(encrypted) < 16:
         raise ValueError('The server returned an invalid encrypted payload.')
     ciphertext, expected_tag = encrypted[:-16], encrypted[-16:]
     expanded_key = _expand_key(key)
     hash_subkey = int.from_bytes(_encrypt_block(expanded_key, bytes(16)), 'big')
-    j0 = iv + b'\\x00\\x00\\x00\\x01'
-    padded_ciphertext = ciphertext + b'\\x00' * ((16 - len(ciphertext) % 16) % 16)
-    auth_data = padded_ciphertext + (0).to_bytes(8, 'big') + (len(ciphertext) * 8).to_bytes(8, 'big')
-    actual_tag = (int.from_bytes(_encrypt_block(expanded_key, j0), 'big') ^ _ghash(hash_subkey, auth_data)).to_bytes(16, 'big')
+    j0 = _derive_j0(hash_subkey, iv)
+    actual_tag = _authentication_tag(expanded_key, hash_subkey, j0, ciphertext, aad)
     if not hmac.compare_digest(actual_tag, expected_tag):
         raise ValueError('Authentication failed: wrong ShareKey or tampered ciphertext.')
-    plaintext = bytearray()
-    counter = j0
-    for offset in range(0, len(ciphertext), 16):
-        counter = _inc32(counter)
-        keystream = _encrypt_block(expanded_key, counter)
-        plaintext.extend(a ^ b for a, b in zip(ciphertext[offset:offset + 16], keystream))
-    return bytes(plaintext)
+    return _crypt_ctr(expanded_key, j0, ciphertext)
 
 def _fetch_payload():
     with urllib.request.urlopen(BASE_URL + '/api/share/' + SHARE_ID, timeout=30) as response:
@@ -145,8 +166,8 @@ def main():
         encrypted = bytes.fromhex(payload['content'])
         iv = bytes.fromhex(payload['iv'])
         print('[XodeVault] Decrypting locally with your ShareKey...', file=sys.stderr)
-        plaintext = decrypt_aes_gcm(share_key, iv, encrypted).decode('utf-8')
-        sys.stdout.write(plaintext)
+        plaintext = decrypt_aes_gcm(share_key, iv, encrypted)
+        sys.stdout.buffer.write(plaintext)
         print('[XodeVault] Done. Decryption successful.', file=sys.stderr)
         return 0
     except (ValueError, UnicodeDecodeError, KeyError, json.JSONDecodeError, urllib.error.URLError, OSError) as error:

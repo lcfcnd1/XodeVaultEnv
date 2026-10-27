@@ -165,6 +165,8 @@ XodeVault/
 
 See [QUICKSTART.md](QUICKSTART.md) for a step-by-step VPS deployment guide using PM2.
 
+Set `BASE_URL` to the public origin used in generated CLI URLs; when unset, it defaults to `http://localhost:3000`.
+
 ---
 
 ## Security Model & Limitations

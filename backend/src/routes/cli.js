@@ -1,15 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const { buildPythonDecryptor } = require('../pythonDecryptor');
+const { BASE_URL } = require('../config');
 
 // Returns a self-contained Node.js script that fetches and decrypts the secret
 // Usage: curl -s https://domain/api/cli/SHARE_ID | node - SHARE_KEY > .env
 router.get('/:id', (req, res) => {
   const shareId = req.params.id;
-  // Behind a reverse proxy (Nginx), req.protocol is always 'http'.
-  // X-Forwarded-Proto contains the original scheme used by the client.
-  const proto = req.get('x-forwarded-proto') || req.protocol;
-  const baseUrl = `${proto}://${req.get('host')}`;
 
   const script = `#!/usr/bin/env node
 // XodeVault CLI Decryptor - Zero-Knowledge E2EE
@@ -21,7 +18,7 @@ const http = require('http');
 const crypto = require('crypto');
 
 const SHARE_ID = ${JSON.stringify(shareId)};
-const BASE_URL = ${JSON.stringify(baseUrl)};
+const BASE_URL = ${JSON.stringify(BASE_URL)};
 const shareKey = process.argv[2];
 
 if (!shareKey) {
@@ -103,11 +100,9 @@ async function decryptAESGCM(encryptedHex, ivHex, keyHex) {
 // Usage: curl -s https://domain/api/cli/SHARE_ID/py | python3 - SHARE_KEY > .env
 router.get('/:id/py', (req, res) => {
   const shareId = req.params.id;
-  const proto = req.get('x-forwarded-proto') || req.protocol;
-  const baseUrl = `${proto}://${req.get('host')}`;
 
   res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-  res.send(buildPythonDecryptor(shareId, baseUrl));
+  res.send(buildPythonDecryptor(shareId, BASE_URL));
 });
 
 module.exports = router;
